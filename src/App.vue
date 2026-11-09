@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { fetchTodos, saveTodos } from './api.js'
 import AppHeader from './components/AppHeader.vue'
 import TodoList from './components/TodoList.vue'
+import { PRIORITIES, priorityOf, rank, nextPriority } from './priorities.js'
 
 const STORAGE_KEY = 'vue-todo:items'
 const UNSYNCED_KEY = 'vue-todo:unsynced'
@@ -20,6 +21,7 @@ function load() {
 
 const todos = ref(load())
 const newTitle = ref('')
+const newPriority = ref('medium')
 const filter = ref('all')
 const editingId = ref(null) // the to-do being edited, so a sync never replaces the list mid-edit
 const offline = ref(false)
@@ -110,9 +112,12 @@ onUnmounted(() => {
 
 const filters = { all: 'All', active: 'Active', done: 'Done' }
 const visible = computed(() => {
-  if (filter.value === 'active') return todos.value.filter((t) => !t.done)
-  if (filter.value === 'done') return todos.value.filter((t) => t.done)
-  return todos.value
+  let list = todos.value
+  if (filter.value === 'active') list = list.filter((t) => !t.done)
+  if (filter.value === 'done') list = list.filter((t) => t.done)
+  // High first, then Medium, then Low. [...list] makes a copy, so sorting never
+  // changes the saved order; within one level the oldest stays on top.
+  return [...list].sort((a, b) => rank(a) - rank(b))
 })
 const left = computed(() => todos.value.filter((t) => !t.done).length)
 const hasDone = computed(() => todos.value.some((t) => t.done))
@@ -120,7 +125,7 @@ const hasDone = computed(() => todos.value.some((t) => t.done))
 function add() {
   const title = newTitle.value.trim()
   if (!title) return
-  todos.value.push({ id: Date.now() + Math.random(), title, done: false })
+  todos.value.push({ id: Date.now() + Math.random(), title, done: false, priority: newPriority.value })
   newTitle.value = ''
 }
 
@@ -141,6 +146,10 @@ function rename(todo, title) {
   else remove(todo) // an empty title deletes the to-do
 }
 
+function changePriority(todo) {
+  todo.priority = nextPriority(priorityOf(todo))
+}
+
 function setEditing(todo, isEditing) {
   editingId.value = isEditing ? todo.id : null
 }
@@ -159,13 +168,22 @@ function setEditing(todo, isEditing) {
         v-model="newTitle"
         data-test="new"
         class="min-w-0 flex-1 rounded-[10px] border border-line bg-surface px-4 py-3.5 text-base outline-none transition-colors placeholder:text-muted focus:border-accent"
-        placeholder="What needs doing?"
+        placeholder="New task…"
         aria-label="New to-do"
         enterkeyhint="done"
         autocomplete="off"
         autofocus
         @keydown.enter="add"
       />
+      <!-- v-model keeps newPriority and the chosen option in step -->
+      <select
+        v-model="newPriority"
+        data-test="new-priority"
+        aria-label="Priority of the new to-do"
+        class="flex-none cursor-pointer rounded-[10px] border border-line bg-surface px-2 text-base outline-none focus:border-accent"
+      >
+        <option v-for="(label, key) in PRIORITIES" :key="key" :value="key">{{ label }}</option>
+      </select>
       <button
         data-test="add"
         class="flex-none cursor-pointer rounded-[10px] bg-accent px-[18px] text-base font-semibold text-page transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-default disabled:opacity-40"
@@ -182,6 +200,7 @@ function setEditing(todo, isEditing) {
       @toggle="toggle"
       @remove="remove"
       @rename="rename"
+      @priority="changePriority"
       @editing="setEditing"
     />
 

@@ -24,9 +24,12 @@ function readBody(req) {
   })
 }
 
+const PRIORITIES = ['high', 'medium', 'low']
+
 function isValidList(items) {
   return Array.isArray(items) && items.every((t) =>
-    t && typeof t === 'object' && typeof t.title === 'string' && typeof t.done === 'boolean')
+    t && typeof t === 'object' && typeof t.title === 'string' && typeof t.done === 'boolean' &&
+    (t.priority === undefined || PRIORITIES.includes(t.priority))) // older to-dos have no priority
 }
 
 export function todoApi(file) {

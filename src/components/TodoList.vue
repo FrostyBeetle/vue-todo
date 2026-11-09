@@ -6,7 +6,7 @@ import TodoItem from './TodoItem.vue'
 defineProps({
   todos: { type: Array, required: true },
 })
-const emit = defineEmits(['toggle', 'remove', 'rename', 'editing'])
+const emit = defineEmits(['toggle', 'remove', 'rename', 'priority', 'editing'])
 </script>
 
 <template>
@@ -18,6 +18,7 @@ const emit = defineEmits(['toggle', 'remove', 'rename', 'editing'])
       @toggle="emit('toggle', todo)"
       @remove="emit('remove', todo)"
       @rename="(title) => emit('rename', todo, title)"
+      @priority="emit('priority', todo)"
       @editing="(isEditing) => emit('editing', todo, isEditing)"
     />
   </ul>

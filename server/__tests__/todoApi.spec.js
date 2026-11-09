@@ -56,6 +56,15 @@ describe('todo API', () => {
     expect(await res.json()).toEqual([{ id: 1, title: 'Keep me', done: false }])
   })
 
+  it('keeps a priority and rejects an unknown one', async () => {
+    const items = [{ id: 1, title: 'Milk', done: false, priority: 'high' }]
+    expect((await put(items)).status).toBe(200)
+    expect((await put([{ id: 2, title: 'X', done: false, priority: 'urgent' }])).status).toBe(400)
+
+    const res = await fetch(`${base}/api/todos`)
+    expect(await res.json()).toEqual(items)
+  })
+
   it('leaves other URLs to the next handler', async () => {
     const res = await fetch(`${base}/something-else`)
     expect(res.status).toBe(418)

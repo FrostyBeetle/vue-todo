@@ -3,11 +3,12 @@
 A minimal to-do list built with Vue 3 and Vite. To-dos are saved in the browser (`localStorage`), so they survive a reload.
 
 ## Features
-- Type and press **Enter** to add a to-do
+- Type and press **Enter** (or click **Add**) to add a to-do
 - Click the circle to mark it done
 - **Double-click** a title to edit it (on a phone: **tap** it). Enter saves, Escape cancels, empty deletes.
 - Made for iPhone Safari too: no double-tap zoom (`touch-action: manipulation`), inputs at 16px (smaller makes Safari zoom in), tap targets of 44px, and room for the notch and home bar
 - Filters: All / Active / Done, plus "Clear done"
+- Priorities: pick High / Medium / Low when you add a to-do. The list shows High first. Click a to-do's coloured label to change it (High → Medium → Low).
 - Light and dark mode follow your system setting
 
 ## Run it

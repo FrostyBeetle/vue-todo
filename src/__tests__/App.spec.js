@@ -143,6 +143,48 @@ describe('To-do app', () => {
     expect(second.get('[data-test="toggle"]').element.checked).toBe(true)
   })
 
+  describe('priorities', () => {
+    const badges = (wrapper) => wrapper.findAll('[data-test="priority"]').map((b) => b.text())
+
+    it('adds a to-do with the chosen priority (Medium by default)', async () => {
+      const wrapper = mount(App)
+      await addTodo(wrapper, 'Normal')
+      await wrapper.get('[data-test="new-priority"]').setValue('high')
+      await addTodo(wrapper, 'Urgent')
+      expect(titles(wrapper)).toEqual(['Urgent', 'Normal'])
+      expect(badges(wrapper)).toEqual(['High', 'Medium'])
+    })
+
+    it('sorts High, then Medium, then Low, and keeps the order within a level', async () => {
+      const wrapper = mount(App)
+      const priority = wrapper.get('[data-test="new-priority"]')
+      for (const [title, level] of [['L1', 'low'], ['M1', 'medium'], ['H1', 'high'], ['L2', 'low'], ['H2', 'high']]) {
+        await priority.setValue(level)
+        await addTodo(wrapper, title)
+      }
+      expect(titles(wrapper)).toEqual(['H1', 'H2', 'M1', 'L1', 'L2'])
+    })
+
+    it('changes the priority when you click the label: High → Medium → Low → High', async () => {
+      const wrapper = mount(App)
+      await wrapper.get('[data-test="new-priority"]').setValue('high')
+      await addTodo(wrapper, 'A')
+      const badge = () => wrapper.get('[data-test="priority"]')
+      await badge().trigger('click')
+      expect(badge().text()).toBe('Medium')
+      await badge().trigger('click')
+      expect(badge().text()).toBe('Low')
+      await badge().trigger('click')
+      expect(badge().text()).toBe('High')
+    })
+
+    it('treats old to-dos without a priority as Medium', () => {
+      localStorage.setItem(KEY, JSON.stringify([{ id: 1, title: 'From before', done: false }]))
+      const wrapper = mount(App)
+      expect(badges(wrapper)).toEqual(['Medium'])
+    })
+  })
+
   it('starts empty when saved data is broken', () => {
     localStorage.setItem(KEY, '{not json')
     const wrapper = mount(App)

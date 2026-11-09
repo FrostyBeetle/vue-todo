@@ -1,13 +1,23 @@
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, computed, nextTick } from 'vue'
+import { PRIORITIES, priorityOf } from '../priorities.js'
 
-// One row: checkbox, title (or the edit box) and a delete button.
+// One row: checkbox, title (or the edit box), priority label and a delete button.
 // A component may not change its props, so it only *tells* the parent what
 // happened with emit(); App.vue makes the actual change to the list.
 const props = defineProps({
   todo: { type: Object, required: true },
 })
-const emit = defineEmits(['toggle', 'remove', 'rename', 'editing'])
+const emit = defineEmits(['toggle', 'remove', 'rename', 'priority', 'editing'])
+
+// The label's colour per level: red = High, blue = Medium, grey = Low.
+// bg-danger/15 = the red colour at 15% strength, as a soft background.
+const badgeColours = {
+  high: 'bg-danger/15 text-danger',
+  medium: 'bg-accent/15 text-accent',
+  low: 'bg-muted/15 text-muted',
+}
+const level = computed(() => priorityOf(props.todo))
 
 const editing = ref(false)
 const editTitle = ref('')
@@ -77,6 +87,17 @@ function saveEdit() {
     >
       {{ todo.title }}
     </span>
+    <!-- Click the label to change the priority (App.vue does the change) -->
+    <button
+      data-test="priority"
+      class="flex-none cursor-pointer rounded-full px-2 py-0.5 text-xs font-semibold touch:px-3 touch:py-1.5"
+      :class="badgeColours[level]"
+      :aria-label="`Priority ${PRIORITIES[level]}, click to change`"
+      title="Click to change the priority"
+      @click="emit('priority')"
+    >
+      {{ PRIORITIES[level] }}
+    </button>
     <!-- Hidden until you hover the row on a PC; always visible and 44px big on touch screens -->
     <button
       data-test="delete"
