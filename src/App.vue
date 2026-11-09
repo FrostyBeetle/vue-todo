@@ -168,17 +168,20 @@ function cancelEdit() {
       </span>
     </header>
 
-    <input
-      v-model="newTitle"
-      data-test="new"
-      class="new"
-      placeholder="What needs doing?"
-      aria-label="New to-do"
-      enterkeyhint="done"
-      autocomplete="off"
-      autofocus
-      @keydown.enter="add"
-    />
+    <div class="add-row">
+      <input
+        v-model="newTitle"
+        data-test="new"
+        class="new"
+        placeholder="What needs doing?"
+        aria-label="New to-do"
+        enterkeyhint="done"
+        autocomplete="off"
+        autofocus
+        @keydown.enter="add"
+      />
+      <button data-test="add" class="add" :disabled="!newTitle.trim()" @click="add">Add</button>
+    </div>
 
     <ul v-if="visible.length" class="list">
       <li v-for="todo in visible" :key="todo.id" class="item" :class="{ done: todo.done }">
@@ -218,7 +221,8 @@ function cancelEdit() {
       </li>
     </ul>
 
-    <p v-else class="empty">{{ todos.length ? 'Nothing here.' : 'All clear. Add something above.' }}</p>
+    <p v-else-if="todos.length" class="empty">Nothing here.</p>
+    <p v-else data-test="empty" class="empty">No tasks yet. Add one above.</p>
 
     <footer v-if="todos.length" class="footer">
       <span data-test="count">{{ left }} left</span>
@@ -280,8 +284,36 @@ h1 {
   letter-spacing: -0.02em;
 }
 
+.add-row {
+  display: flex;
+  gap: 8px;
+}
+
+.add {
+  flex: none;
+  padding: 0 18px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.add:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.add:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .new {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 14px 16px;
   font: inherit;
   font-size: 16px; /* under 16px, iPhone Safari zooms in when you tap the field */

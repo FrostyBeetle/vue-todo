@@ -45,6 +45,23 @@ describe('To-do app', () => {
     expect(wrapper.get('[data-test="new"]').element.value).toBe('')
   })
 
+  it('adds a to-do with the Add button', async () => {
+    const wrapper = mount(App)
+    await wrapper.get('[data-test="new"]').setValue('Walk the dog')
+    await wrapper.get('[data-test="add"]').trigger('click')
+    expect(titles(wrapper)).toEqual(['Walk the dog'])
+    expect(wrapper.get('[data-test="new"]').element.value).toBe('')
+  })
+
+  it('shows a message instead of the list when there are no to-dos', async () => {
+    const wrapper = mount(App)
+    expect(wrapper.find('[data-test="empty"]').text()).toBe('No tasks yet. Add one above.')
+    expect(wrapper.find('.list').exists()).toBe(false)
+    await addTodo(wrapper, 'A')
+    expect(wrapper.find('[data-test="empty"]').exists()).toBe(false)
+    expect(wrapper.find('.list').exists()).toBe(true)
+  })
+
   it('ignores empty input', async () => {
     const wrapper = mount(App)
     await addTodo(wrapper, '   ')
