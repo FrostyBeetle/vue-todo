@@ -37,7 +37,10 @@ npm run build      # production files in dist/
 ```
 
 ## Where things are
-- `src/App.vue`: the whole app (logic, sync, template, styles)
+- `src/App.vue`: the data (the to-do list), adding, filters, and the sync. Every change to the list happens here.
+- `src/components/AppHeader.vue`: the title and the offline label
+- `src/components/TodoList.vue`: the list; shows one `TodoItem` per to-do with `v-for`
+- `src/components/TodoItem.vue`: one row (checkbox, title or edit box, delete). It gets its to-do as a **prop** and reports clicks back with **emit** (`toggle`, `remove`, `rename`, `editing`).
 - `src/api.js`: fetch calls to the save API
 - `server/todoApi.js`: the save API (a Vite plugin)
 - `data/todos.json`: the shared list
