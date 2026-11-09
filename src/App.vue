@@ -1,6 +1,8 @@
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { fetchTodos, saveTodos } from './api.js'
+import AppHeader from './components/AppHeader.vue'
+import TodoList from './components/TodoList.vue'
 
 const STORAGE_KEY = 'vue-todo:items'
 const UNSYNCED_KEY = 'vue-todo:unsynced'
@@ -19,17 +21,8 @@ function load() {
 const todos = ref(load())
 const newTitle = ref('')
 const filter = ref('all')
-const editingId = ref(null)
-const editTitle = ref('')
-const editInput = ref(null)
+const editingId = ref(null) // the to-do being edited, so a sync never replaces the list mid-edit
 const offline = ref(false)
-
-// Touch screens have no real double-click (Safari zooms instead), so a single tap edits there
-const isTouch = typeof window.matchMedia === 'function' && window.matchMedia('(hover: none)').matches
-
-function onTitleClick(todo) {
-  if (isTouch) startEdit(todo)
-}
 
 // --- Sync with the PC (server/todoApi.js) ---
 // "unsynced" = this device has changes the server hasn't confirmed yet. It's kept in
@@ -139,34 +132,23 @@ function clearDone() {
   todos.value = todos.value.filter((t) => !t.done)
 }
 
-async function startEdit(todo) {
-  editingId.value = todo.id
-  editTitle.value = todo.title
-  await nextTick()
-  editInput.value?.[0]?.focus()
+function toggle(todo) {
+  todo.done = !todo.done
 }
 
-function saveEdit(todo) {
-  if (editingId.value !== todo.id) return // already saved or cancelled (blur after Enter/Escape)
-  editingId.value = null
-  const title = editTitle.value.trim()
+function rename(todo, title) {
   if (title) todo.title = title
-  else remove(todo)
+  else remove(todo) // an empty title deletes the to-do
 }
 
-function cancelEdit() {
-  editingId.value = null
+function setEditing(todo, isEditing) {
+  editingId.value = isEditing ? todo.id : null
 }
 </script>
 
 <template>
   <main class="app">
-    <header class="header">
-      <h1>To-do</h1>
-      <span v-if="offline" data-test="offline" class="offline" title="Changes will sync when the PC is reachable">
-        Offline · saved on this device
-      </span>
-    </header>
+    <AppHeader :offline="offline" />
 
     <div class="add-row">
       <input
@@ -183,43 +165,14 @@ function cancelEdit() {
       <button data-test="add" class="add" :disabled="!newTitle.trim()" @click="add">Add</button>
     </div>
 
-    <ul v-if="visible.length" class="list">
-      <li v-for="todo in visible" :key="todo.id" class="item" :class="{ done: todo.done }">
-        <input
-          v-model="todo.done"
-          data-test="toggle"
-          type="checkbox"
-          class="check"
-          :aria-label="`Mark ${todo.title} as done`"
-        />
-        <input
-          v-if="editingId === todo.id"
-          ref="editInput"
-          v-model="editTitle"
-          data-test="edit"
-          class="edit"
-          aria-label="Edit to-do"
-          enterkeyhint="done"
-          autocomplete="off"
-          @keydown.enter="saveEdit(todo)"
-          @keydown.escape="cancelEdit"
-          @blur="saveEdit(todo)"
-        />
-        <span
-          v-else
-          data-test="title"
-          class="title"
-          :title="isTouch ? 'Tap to edit' : 'Double-click to edit'"
-          @click="onTitleClick(todo)"
-          @dblclick="startEdit(todo)"
-        >
-          {{ todo.title }}
-        </span>
-        <button data-test="delete" class="delete" :aria-label="`Delete ${todo.title}`" @click="remove(todo)">
-          ×
-        </button>
-      </li>
-    </ul>
+    <TodoList
+      v-if="visible.length"
+      :todos="visible"
+      @toggle="toggle"
+      @remove="remove"
+      @rename="rename"
+      @editing="setEditing"
+    />
 
     <p v-else-if="todos.length" class="empty">Nothing here.</p>
     <p v-else data-test="empty" class="empty">No tasks yet. Add one above.</p>
@@ -252,36 +205,6 @@ function cancelEdit() {
     max(20px, env(safe-area-inset-right))
     max(40px, env(safe-area-inset-bottom))
     max(20px, env(safe-area-inset-left));
-}
-
-.header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.offline {
-  font-size: 13px;
-  color: var(--muted);
-}
-.offline::before {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 6px;
-  border-radius: 50%;
-  background: var(--danger);
-  vertical-align: middle;
-}
-
-h1 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
 }
 
 .add-row {
@@ -328,120 +251,8 @@ h1 {
   border-color: var(--accent);
 }
 
-.list {
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 48px;
-  padding: 4px 4px 4px 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.check {
-  appearance: none;
-  flex: none;
-  width: 20px;
-  height: 20px;
-  margin: 0;
-  border: 1.5px solid var(--muted);
-  border-radius: 50%;
-  cursor: pointer;
-  display: grid;
-  place-content: center;
-  transition: background 0.15s, border-color 0.15s;
-}
-.check::after {
-  content: '';
-  width: 5px;
-  height: 9px;
-  border: solid var(--bg);
-  border-width: 0 2px 2px 0;
-  transform: translateY(-1px) rotate(45deg);
-  opacity: 0;
-}
-.check:checked {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.check:checked::after {
-  opacity: 1;
-}
-.check:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.title {
-  flex: 1;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  cursor: text;
-  transition: color 0.15s;
-}
-.done .title {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-.edit {
-  flex: 1;
-  min-width: 0;
-  padding: 6px 8px;
-  margin: -7px 0 -7px -9px;
-  font: inherit;
-  font-size: 16px; /* same iPhone zoom rule as .new */
-  color: inherit;
-  background: var(--surface);
-  border: 1px solid var(--accent);
-  border-radius: 6px;
-  outline: none;
-}
-
-.delete {
-  flex: none;
-  width: 32px;
-  height: 32px;
-  font-size: 20px;
-  line-height: 1;
-  color: var(--muted);
-  background: none;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
-}
-.item:hover .delete,
-.delete:focus-visible {
-  opacity: 1;
-}
-.delete:hover {
-  color: var(--danger);
-}
-/* Touch screens: no hover, and fingers need targets of about 44px */
+/* Touch screens: bigger footer buttons for fingers */
 @media (hover: none) {
-  .item {
-    min-height: 56px;
-  }
-  .check {
-    width: 24px;
-    height: 24px;
-  }
-  .delete {
-    width: 44px;
-    height: 44px;
-    margin-right: -6px;
-    opacity: 1;
-  }
-  .title {
-    cursor: pointer;
-  }
   .footer button {
     padding: 10px 12px;
   }
