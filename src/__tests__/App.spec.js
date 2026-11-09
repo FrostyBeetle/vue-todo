@@ -56,10 +56,10 @@ describe('To-do app', () => {
   it('shows a message instead of the list when there are no to-dos', async () => {
     const wrapper = mount(App)
     expect(wrapper.find('[data-test="empty"]').text()).toBe('No tasks yet. Add one above.')
-    expect(wrapper.find('.list').exists()).toBe(false)
+    expect(wrapper.find('[data-test="list"]').exists()).toBe(false)
     await addTodo(wrapper, 'A')
     expect(wrapper.find('[data-test="empty"]').exists()).toBe(false)
-    expect(wrapper.find('.list').exists()).toBe(true)
+    expect(wrapper.find('[data-test="list"]').exists()).toBe(true)
   })
 
   it('ignores empty input', async () => {

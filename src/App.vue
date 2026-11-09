@@ -147,14 +147,18 @@ function setEditing(todo, isEditing) {
 </script>
 
 <template>
-  <main class="app">
+  <!-- max(..., env(safe-area-inset-...)) keeps clear of the iPhone notch and home bar -->
+  <main
+    class="mx-auto max-w-[520px] pt-[max(72px,env(safe-area-inset-top))] pr-[max(20px,env(safe-area-inset-right))] pb-[max(40px,env(safe-area-inset-bottom))] pl-[max(20px,env(safe-area-inset-left))] max-[420px]:pt-[max(40px,env(safe-area-inset-top))]"
+  >
     <AppHeader :offline="offline" />
 
-    <div class="add-row">
+    <div class="flex gap-2">
+      <!-- text-base = 16px: smaller makes iPhone Safari zoom in when you tap the field -->
       <input
         v-model="newTitle"
         data-test="new"
-        class="new"
+        class="min-w-0 flex-1 rounded-[10px] border border-line bg-surface px-4 py-3.5 text-base outline-none transition-colors placeholder:text-muted focus:border-accent"
         placeholder="What needs doing?"
         aria-label="New to-do"
         enterkeyhint="done"
@@ -162,7 +166,14 @@ function setEditing(todo, isEditing) {
         autofocus
         @keydown.enter="add"
       />
-      <button data-test="add" class="add" :disabled="!newTitle.trim()" @click="add">Add</button>
+      <button
+        data-test="add"
+        class="flex-none cursor-pointer rounded-[10px] bg-accent px-[18px] text-base font-semibold text-page transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-default disabled:opacity-40"
+        :disabled="!newTitle.trim()"
+        @click="add"
+      >
+        Add
+      </button>
     </div>
 
     <TodoList
@@ -174,143 +185,32 @@ function setEditing(todo, isEditing) {
       @editing="setEditing"
     />
 
-    <p v-else-if="todos.length" class="empty">Nothing here.</p>
-    <p v-else data-test="empty" class="empty">No tasks yet. Add one above.</p>
+    <p v-else-if="todos.length" class="mt-10 text-center text-muted">Nothing here.</p>
+    <p v-else data-test="empty" class="mt-10 text-center text-muted">No tasks yet. Add one above.</p>
 
-    <footer v-if="todos.length" class="footer">
+    <!-- max-[420px]: = narrow phones: the filters move to their own row -->
+    <footer v-if="todos.length" class="mt-4 flex items-center justify-between gap-2 text-sm text-muted max-[420px]:flex-wrap">
       <span data-test="count">{{ left }} left</span>
-      <nav class="filters">
+      <nav class="flex gap-1 max-[420px]:order-3 max-[420px]:w-full max-[420px]:justify-center">
         <button
           v-for="(label, key) in filters"
           :key="key"
           :data-test="`filter-${key}`"
-          :class="{ active: filter === key }"
+          class="cursor-pointer rounded-md px-2.5 py-1.5 hover:text-ink touch:px-3 touch:py-2.5"
+          :class="{ 'bg-surface text-ink': filter === key }"
           @click="filter = key"
         >
           {{ label }}
         </button>
       </nav>
-      <button data-test="clear" class="clear" :disabled="!hasDone" @click="clearDone">Clear done</button>
+      <button
+        data-test="clear"
+        class="cursor-pointer rounded-md px-2.5 py-1.5 enabled:hover:text-ink disabled:cursor-default disabled:opacity-40 touch:px-3 touch:py-2.5"
+        :disabled="!hasDone"
+        @click="clearDone"
+      >
+        Clear done
+      </button>
     </footer>
   </main>
 </template>
-
-<style scoped>
-.app {
-  max-width: 520px;
-  margin: 0 auto;
-  /* env(safe-area-inset-*) keeps clear of the iPhone notch and home bar */
-  padding:
-    max(72px, env(safe-area-inset-top))
-    max(20px, env(safe-area-inset-right))
-    max(40px, env(safe-area-inset-bottom))
-    max(20px, env(safe-area-inset-left));
-}
-
-.add-row {
-  display: flex;
-  gap: 8px;
-}
-
-.add {
-  flex: none;
-  padding: 0 18px;
-  font: inherit;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--bg);
-  background: var(--accent);
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.add:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.add:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.new {
-  flex: 1;
-  min-width: 0;
-  padding: 14px 16px;
-  font: inherit;
-  font-size: 16px; /* under 16px, iPhone Safari zooms in when you tap the field */
-  color: inherit;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.new:focus {
-  border-color: var(--accent);
-}
-
-/* Touch screens: bigger footer buttons for fingers */
-@media (hover: none) {
-  .footer button {
-    padding: 10px 12px;
-  }
-}
-
-.empty {
-  margin: 40px 0 0;
-  text-align: center;
-  color: var(--muted);
-}
-
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 16px;
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.filters {
-  display: flex;
-  gap: 4px;
-}
-
-.footer button {
-  padding: 6px 10px;
-  font: inherit;
-  color: inherit;
-  background: none;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.footer button:hover:not(:disabled) {
-  color: var(--text);
-}
-.filters button.active {
-  color: var(--text);
-  background: var(--surface);
-}
-.clear:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-@media (max-width: 420px) {
-  .app {
-    padding-top: 40px;
-  }
-  .footer {
-    flex-wrap: wrap;
-  }
-  .filters {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-  }
-}
-</style>

@@ -44,4 +44,10 @@ npm run build      # production files in dist/
 - `src/api.js`: fetch calls to the save API
 - `server/todoApi.js`: the save API (a Vite plugin)
 - `data/todos.json`: the shared list
-- `src/assets/main.css`: colours (CSS variables) and base styles
+- `src/assets/main.css`: loads Tailwind CSS, my colours (CSS variables, with a dark set) and base styles
+
+## Styling: Tailwind CSS
+All styling is done with Tailwind classes in the templates (no `<style>` blocks). Tailwind runs as a Vite plugin (`@tailwindcss/vite` in `vite.config.js`).
+- My own colour classes come from `@theme inline` in `main.css`: `bg-page`, `bg-surface`, `text-ink`, `text-muted`, `border-line`, `bg-accent`, `text-danger`. They point at CSS variables, so dark mode switches automatically.
+- `touch:` is a custom variant for screens without a mouse (phones): bigger buttons and the × always visible.
+- `group` + `group-hover:` shows the × button when you hover a row; `max-[420px]:` changes the layout on narrow phones.

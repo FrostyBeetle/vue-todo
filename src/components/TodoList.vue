@@ -10,7 +10,7 @@ const emit = defineEmits(['toggle', 'remove', 'rename', 'editing'])
 </script>
 
 <template>
-  <ul class="list">
+  <ul data-test="list" class="mt-4">
     <TodoItem
       v-for="todo in todos"
       :key="todo.id"
@@ -22,11 +22,3 @@ const emit = defineEmits(['toggle', 'remove', 'rename', 'editing'])
     />
   </ul>
 </template>
-
-<style scoped>
-.list {
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-</style>

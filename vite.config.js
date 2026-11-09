@@ -3,6 +3,7 @@ import { hostname } from 'node:os'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { todoApi } from './server/todoApi.js'
 
@@ -10,6 +11,7 @@ import { todoApi } from './server/todoApi.js'
 export default defineConfig({
   plugins: [
     vue(),
+    tailwindcss(), // turns the Tailwind classes used in the .vue files into CSS
     vueDevTools(),
     // The shared list for all my devices lives in data/todos.json
     todoApi(fileURLToPath(new URL('./data/todos.json', import.meta.url))),

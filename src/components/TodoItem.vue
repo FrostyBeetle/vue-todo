@@ -41,21 +41,24 @@ function saveEdit() {
 </script>
 
 <template>
-  <li class="item" :class="{ done: todo.done }">
+  <!-- "group" lets the × button react when the mouse is anywhere on the row (group-hover:) -->
+  <li class="group flex min-h-12 items-center gap-3 border-b border-line py-1 pr-1 pl-2 touch:min-h-14">
+    <!-- A round checkbox: appearance-none hides the normal one, after: draws the tick -->
     <input
       data-test="toggle"
       type="checkbox"
-      class="check"
+      class="grid size-5 flex-none cursor-pointer appearance-none place-content-center rounded-full border-[1.5px] border-muted transition-colors checked:border-accent checked:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent touch:size-6 after:h-[9px] after:w-[5px] after:-translate-y-px after:rotate-45 after:border-r-2 after:border-b-2 after:border-page after:opacity-0 after:content-[''] checked:after:opacity-100"
       :checked="todo.done"
       :aria-label="`Mark ${todo.title} as done`"
       @change="emit('toggle')"
     />
+    <!-- text-base = 16px: smaller makes iPhone Safari zoom in when you tap the field -->
     <input
       v-if="editing"
       ref="editInput"
       v-model="editTitle"
       data-test="edit"
-      class="edit"
+      class="-my-[7px] -ml-[9px] min-w-0 flex-1 rounded-md border border-accent bg-surface px-2 py-1.5 text-base outline-none"
       aria-label="Edit to-do"
       enterkeyhint="done"
       autocomplete="off"
@@ -66,128 +69,22 @@ function saveEdit() {
     <span
       v-else
       data-test="title"
-      class="title"
+      class="min-w-0 flex-1 cursor-text wrap-anywhere transition-colors touch:cursor-pointer"
+      :class="{ 'text-muted line-through': todo.done }"
       :title="isTouch ? 'Tap to edit' : 'Double-click to edit'"
       @click="onTitleClick"
       @dblclick="startEdit"
     >
       {{ todo.title }}
     </span>
-    <button data-test="delete" class="delete" :aria-label="`Delete ${todo.title}`" @click="emit('remove')">
+    <!-- Hidden until you hover the row on a PC; always visible and 44px big on touch screens -->
+    <button
+      data-test="delete"
+      class="size-8 flex-none cursor-pointer rounded-md text-xl leading-none text-muted opacity-0 transition hover:text-danger focus-visible:opacity-100 group-hover:opacity-100 touch:-mr-1.5 touch:size-11 touch:opacity-100"
+      :aria-label="`Delete ${todo.title}`"
+      @click="emit('remove')"
+    >
       ×
     </button>
   </li>
 </template>
-
-<style scoped>
-.item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 48px;
-  padding: 4px 4px 4px 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.check {
-  appearance: none;
-  flex: none;
-  width: 20px;
-  height: 20px;
-  margin: 0;
-  border: 1.5px solid var(--muted);
-  border-radius: 50%;
-  cursor: pointer;
-  display: grid;
-  place-content: center;
-  transition: background 0.15s, border-color 0.15s;
-}
-.check::after {
-  content: '';
-  width: 5px;
-  height: 9px;
-  border: solid var(--bg);
-  border-width: 0 2px 2px 0;
-  transform: translateY(-1px) rotate(45deg);
-  opacity: 0;
-}
-.check:checked {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.check:checked::after {
-  opacity: 1;
-}
-.check:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.title {
-  flex: 1;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  cursor: text;
-  transition: color 0.15s;
-}
-.done .title {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-.edit {
-  flex: 1;
-  min-width: 0;
-  padding: 6px 8px;
-  margin: -7px 0 -7px -9px;
-  font: inherit;
-  font-size: 16px; /* under 16px, iPhone Safari zooms in when you tap the field */
-  color: inherit;
-  background: var(--surface);
-  border: 1px solid var(--accent);
-  border-radius: 6px;
-  outline: none;
-}
-
-.delete {
-  flex: none;
-  width: 32px;
-  height: 32px;
-  font-size: 20px;
-  line-height: 1;
-  color: var(--muted);
-  background: none;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
-}
-.item:hover .delete,
-.delete:focus-visible {
-  opacity: 1;
-}
-.delete:hover {
-  color: var(--danger);
-}
-
-/* Touch screens: no hover, and fingers need targets of about 44px */
-@media (hover: none) {
-  .item {
-    min-height: 56px;
-  }
-  .check {
-    width: 24px;
-    height: 24px;
-  }
-  .delete {
-    width: 44px;
-    height: 44px;
-    margin-right: -6px;
-    opacity: 1;
-  }
-  .title {
-    cursor: pointer;
-  }
-}
-</style>

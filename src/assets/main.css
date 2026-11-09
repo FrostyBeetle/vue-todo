@@ -1,3 +1,9 @@
+@import 'tailwindcss';
+
+/* touch:... classes only apply on screens without a mouse (phones, tablets) */
+@custom-variant touch (@media (hover: none));
+
+/* My colours. The dark set below swaps them when the system is in dark mode. */
 :root {
   --bg: #fafafa;
   --surface: #ffffff;
@@ -22,27 +28,35 @@
   }
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+/* Turn those colours into Tailwind classes: bg-page, bg-surface, text-ink, text-muted,
+   border-line, bg-accent, text-danger, ... "inline" keeps them pointing at the variables,
+   so dark mode works without dark: classes. */
+@theme inline {
+  --color-page: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--border);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
 }
 
-html {
-  -webkit-text-size-adjust: 100%; /* no font blow-up when the iPhone turns sideways */
-  text-size-adjust: 100%;
-  touch-action: manipulation; /* no double-tap zoom; pinch-zoom still works */
-  -webkit-tap-highlight-color: transparent; /* no grey flash on tap */
-}
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%; /* no font blow-up when the iPhone turns sideways */
+    text-size-adjust: 100%;
+    touch-action: manipulation; /* no double-tap zoom; pinch-zoom still works */
+    -webkit-tap-highlight-color: transparent; /* no grey flash on tap */
+  }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  min-height: 100dvh; /* the real visible height, also with Safari's bars */
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
+  body {
+    min-height: 100vh;
+    min-height: 100dvh; /* the real visible height, also with Safari's bars */
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
 }
