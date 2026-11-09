@@ -1,6 +1,32 @@
 # vue-todo
 
-A minimal to-do list built with Vue 3 and Vite. To-dos are saved in the browser (`localStorage`), so they survive a reload.
+A minimal to-do list built with Vue 3, Vite and Tailwind CSS. To-dos are saved in the browser (`localStorage`), so they survive a reload.
+
+School assignment: **C25 | VUE.JS – Eindopdracht: Bouw een To-Do App**.
+
+## Run it
+```bash
+npm install
+npm run dev        # then open http://localhost:5173
+```
+Needs Node.js 22.18+ or 24.12+.
+
+## Assignment checklist
+| Requirement | Where |
+|---|---|
+| 1. Add tasks with `ref()`, `v-model` and a button with `@click` | `src/App.vue`: `newTitle = ref('')`, `v-model="newTitle"`, `<button @click="add">` (Enter works too) |
+| 2. Show tasks with `v-for` | `src/components/TodoList.vue`: `v-for="todo in todos"` |
+| 3. Delete a task with a button and a function in `<script setup>` | × button in `TodoItem.vue` → `remove()` in `App.vue` |
+| 4. Conditional display with `v-if` | `App.vue`: the list only shows with `v-if="visible.length"`, otherwise "No tasks yet. Add one above." (`v-else`); the footer and the offline label use `v-if` too |
+| 5. At least one own component, imported in `App.vue` | `AppHeader.vue`, `TodoList.vue`, `TodoItem.vue` in `src/components/` |
+| 6. Tailwind CSS | All styling is Tailwind classes, see [Styling](#styling-tailwind-css) |
+| A. Tick tasks off as done | Round checkbox in `TodoItem.vue` |
+| B. Show the number of open tasks | "x left" in the footer (`left` computed in `App.vue`) |
+| C. Filter All / Active / Done | Buttons in the footer (`filter` + `visible` computed in `App.vue`) |
+| D. Priorities High / Medium / Low | Picker next to the input, coloured label per task (click to change), list sorted High first; `src/priorities.js` |
+| E. Saved in `localStorage` | `watch` in `App.vue` saves every change; reload and everything is still there |
+
+Extra: edit a title with a double-click, "Clear done", dark mode, works on iPhone, sync between phone and PC, and 33 automated tests (`npx vitest run`).
 
 ## Features
 - Type and press **Enter** (or click **Add**) to add a to-do
@@ -10,12 +36,6 @@ A minimal to-do list built with Vue 3 and Vite. To-dos are saved in the browser 
 - Filters: All / Active / Done, plus "Clear done"
 - Priorities: pick High / Medium / Low when you add a to-do. The list shows High first. Click a to-do's coloured label to change it (High → Medium → Low).
 - Light and dark mode follow your system setting
-
-## Run it
-```bash
-npm install
-npm run dev        # http://localhost:5173
-```
 
 ## Open it on my phone
 `npm run dev` also shares the site on the network (`server.host` in `vite.config.js`). The PC must be on with the server running.
